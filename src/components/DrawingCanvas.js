@@ -7,6 +7,7 @@ const DrawingCanvas = () => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     context = canvas.getContext("2d");
     context.lineWidth = 10;
     context.lineJoin = "round";
