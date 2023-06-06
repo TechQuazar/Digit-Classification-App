@@ -17,9 +17,12 @@ const DigitClassificationApp = () => {
     // console.log("Image", image);
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/upload", {
-        image: image,
-      });
+      const response = await axios.post(
+        "https://digit-classification-backend.onrender.com/upload",
+        {
+          image: image,
+        }
+      );
       setClassificationResult(response.data.output);
     } catch (error) {
       console.error("Error occurred while classifying digit:", error);
