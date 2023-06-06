@@ -23,6 +23,11 @@ const DrawingCanvas = () => {
     const coordinates = getEventCoordinates(event);
     context.beginPath();
     context.moveTo(coordinates.x, coordinates.y);
+    if (event.type === "touchstart") {
+      event.currentTarget.addEventListener("touchmove", draw);
+      event.currentTarget.addEventListener("touchend", stopDrawing);
+      event.currentTarget.addEventListener("touchcancel", stopDrawing);
+    }
   };
 
   const draw = (event) => {
@@ -33,8 +38,14 @@ const DrawingCanvas = () => {
     context.stroke();
   };
 
-  const stopDrawing = () => {
+  const stopDrawing = (event) => {
+    event.preventDefault();
     isDrawing = false;
+    if (event.type === "touchend" || event.type === "touchcancel") {
+      event.currentTarget.removeEventListener("touchmove", draw);
+      event.currentTarget.removeEventListener("touchend", stopDrawing);
+      event.currentTarget.removeEventListener("touchcancel", stopDrawing);
+    }
   };
 
   const getEventCoordinates = (event) => {
@@ -44,9 +55,9 @@ const DrawingCanvas = () => {
       y = event.nativeEvent.offsetY;
     } else if (event.type.startsWith("touch")) {
       const touch = event.touches[0];
-      const rect = canvasRef.current.getBoundingClientRect();
-      const scaleX = canvasRef.current.width / rect.width;
-      const scaleY = canvasRef.current.height / rect.height;
+      const rect = event.currentTarget.getBoundingClientRect();
+      const scaleX = event.currentTarget.width / rect.width;
+      const scaleY = event.currentTarget.height / rect.height;
       x = (touch.clientX - rect.left) * scaleX;
       y = (touch.clientY - rect.top) * scaleY;
     }
@@ -62,9 +73,7 @@ const DrawingCanvas = () => {
       onMouseUp={stopDrawing}
       onMouseLeave={stopDrawing}
       onTouchStart={startDrawing}
-      onTouchMove={draw}
-      onTouchEnd={stopDrawing}
-      onTouchCancel={stopDrawing}
+      style={{ touchAction: "none" }}
     ></canvas>
   );
 };
