@@ -7,7 +7,6 @@ const DrawingCanvas = () => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     context = canvas.getContext("2d");
     context.lineWidth = 10;
     context.lineJoin = "round";
@@ -18,21 +17,39 @@ const DrawingCanvas = () => {
   }, []);
 
   const startDrawing = (event) => {
+    event.preventDefault();
     isDrawing = true;
-    const { offsetX, offsetY } = event.nativeEvent;
+    const coordinates = getEventCoordinates(event);
     context.beginPath();
-    context.moveTo(offsetX, offsetY);
+    context.moveTo(coordinates.x, coordinates.y);
   };
 
   const draw = (event) => {
+    event.preventDefault();
     if (!isDrawing) return;
-    const { offsetX, offsetY } = event.nativeEvent;
-    context.lineTo(offsetX, offsetY);
+    const coordinates = getEventCoordinates(event);
+    context.lineTo(coordinates.x, coordinates.y);
     context.stroke();
   };
 
   const stopDrawing = () => {
     isDrawing = false;
+  };
+
+  const getEventCoordinates = (event) => {
+    let x, y;
+    if (event.type.startsWith("mouse")) {
+      x = event.nativeEvent.offsetX;
+      y = event.nativeEvent.offsetY;
+    } else if (event.type.startsWith("touch")) {
+      const touch = event.touches[0];
+      const rect = canvasRef.current.getBoundingClientRect();
+      const scaleX = canvasRef.current.width / rect.width;
+      const scaleY = canvasRef.current.height / rect.height;
+      x = (touch.clientX - rect.left) * scaleX;
+      y = (touch.clientY - rect.top) * scaleY;
+    }
+    return { x, y };
   };
 
   return (
@@ -43,6 +60,10 @@ const DrawingCanvas = () => {
       onMouseMove={draw}
       onMouseUp={stopDrawing}
       onMouseLeave={stopDrawing}
+      onTouchStart={startDrawing}
+      onTouchMove={draw}
+      onTouchEnd={stopDrawing}
+      onTouchCancel={stopDrawing}
     ></canvas>
   );
 };
